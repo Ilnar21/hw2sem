@@ -1,16 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { cars } from '../components/CarList';
-
-
 
 const CarDetailPage = () => {
     const { id } = useParams();
-    const car = cars.find(car => car.id === parseInt(id));
+    const [car, setCar] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    if (!car) {
-        return <div className="container">Car not found</div>;
-    }
+    useEffect(() => {
+        fetch(`/api/cars/${id}`)
+            .then(res => {
+                if (!res.ok) throw new Error('Car not found');
+                return res.json();
+            })
+            .then(data => {
+                setCar(data);
+                setLoading(false);
+            })
+            .catch(err => {
+                setError(err.message);
+                setLoading(false);
+            });
+    }, [id]);
+
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>Error: {error}</p>;
+    if (!car) return <p>Car not found</p>;
 
     return (
         <div className="container">
